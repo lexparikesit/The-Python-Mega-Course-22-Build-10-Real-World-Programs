@@ -1,0 +1,195 @@
+import folium
+
+#creates a new basic Map using Python folium's with its coordinates
+#adding tiles as "Stamen Terrain"
+map = folium.Map(location=[-6.181180, 106.850390], tiles="Stamen Terrain")
+
+#creates a Feature Group
+fg = folium.featureGroup(name="My Map")
+
+#loops to fetch a Marker (more than 1)
+for coordinates in [[-7.181180, 107.850390],[-9.181180, 110.850390]]:
+    fg.add_Child(folium.Marker(location=coordinates, popup="Hi I am Marker",
+       icon=folium.Icon(color="Green")))
+
+#calling the add_child
+map.add_child(fg)
+
+#saves the Map as HTML file
+map.save("Map.html")
+
+
+================================================================================
+Read a csv/txt file to create a marker through it
+
+
+import folium
+import pandas
+
+data_volcanoes = pandas.read_csv("Volcanoes.txt")
+
+#transform data in the txt into a list (latitude, longitude, elevated)
+lt = list(data_volcanoes["LAT"])
+ln = list(data_volcanoes["LON])
+el = list(data_volcanoes["ELEV"])
+
+#creates a new basic Map using Python folium's with its coordinates
+#adding tiles as "Stamen Terrain"
+map = folium.Map(location=[-6.181180, 106.850390], tiles="Stamen Terrain")
+
+#creates a Feature Group
+fg = folium.featureGroup(name="My Map")
+
+#loops to fetch a Marker (more than 1)
+for lat, lon, elev in zip(lt, ln, el):
+    fg.add_Child(folium.Marker(location=[lat, lon], popup=str(elev),
+       icon=folium.Icon(color="Red")))
+
+#calling the add_child
+map.add_child(fg)
+
+#saves the Map as HTML file
+map.save("Map.html")
+
+
+
+================================================================================
+Creates a function to define if the volcanoes is below 1000, between or equals
+1000 until 3000 and above 3000 meters
+
+
+import folium
+import pandas
+
+data_volcanoes = pandas.read_csv("Volcanoes.txt")
+
+#transform data in the txt into a list (latitude, longitude, elevated)
+lt = list(data_volcanoes["LAT"])
+ln = list(data_volcanoes["LON])
+el = list(data_volcanoes["ELEV"])
+
+#define a color elevations through a function
+def color_elevations(elevation):
+    if elevation < 1000:
+	return 'green'
+    elif 1000 <= elevation < 3000:
+	return 'orange'
+    else:
+	return 'red'
+
+#creates a new basic Map using Python folium's with its coordinates
+#adding tiles as "Stamen Terrain"
+map = folium.Map(location=[-6.181180, 106.850390], tiles="Stamen Terrain")
+
+#creates a Feature Group
+fg = folium.featureGroup(name="My Map")
+
+#loops to fetch a Marker (more than 1)
+for lat, lon, elev in zip(lt, ln, el):
+    fg.add_Child(folium.Marker(location=[lat, lon], popup=str(elev)+' m',
+       icon=folium.Icon(color=color_elevations(elev))))
+
+#calling the add_child
+map.add_child(fg)
+
+#saves the Map as HTML file
+map.save("Map.html")
+
+
+
+================================================================================
+Transform a folium Marker to folium Circle Marker
+
+import folium
+import pandas
+
+data_volcanoes = pandas.read_csv("Volcanoes.txt")
+
+#transform data in the txt into a list (latitude, longitude, elevated)
+lt = list(data_volcanoes["LAT"])
+ln = list(data_volcanoes["LON])
+el = list(data_volcanoes["ELEV"])
+
+#define a color elevations through a function
+def color_elevations(elevation):
+    if elevation < 1000:
+	return 'green'
+    elif 1000 <= elevation < 3000:
+	return 'orange'
+    else:
+	return 'red'
+
+#creates a new basic Map using Python folium's with its coordinates
+#adding tiles as "Stamen Terrain"
+map = folium.Map(location=[-6.181180, 106.850390], tiles="Stamen Terrain")
+
+#creates a Feature Group
+fg = folium.featureGroup(name="My Map")
+
+#create a Circle Marker 
+for lat, lon, elev in zip(lt, ln, el):
+    fg.add_Child(folium.CircleMarker(location=[lat, lon], popup=str(elev)+' m',
+	radius=10, fill_color=color_elevations(elev), fill=True,
+	fill_opacity=0.7))
+
+#calling the add_child
+map.add_child(fg)
+
+#saves the Map as HTML file
+map.save("Map.html")
+
+
+
+================================================================================
+Adding a JSON files through the Folium, Styling the population layer, and 
+Adding a layer Control Panel
+
+import folium
+import pandas
+
+#pointing the map location
+map = folium.map(location=[-6.1, 106.8],zoom_start=6,TileLayer="Mapbox Bright")
+
+#read csv files and determine the lotitude and longitude through a List
+data = pandas.read_csv('Volcanoes.txt')
+lt = list(data['LAT'])
+ln = list(data['LON'])
+el = list(data['ELEV'])
+
+#define a elevations using color
+def color_elevations(elevations):
+    if elevations < 1000:
+	return 'green'
+    elif 1000 <= elevations < 3000:
+	return 'orange'
+    else:
+	return 'red'
+
+#creating a feature group of volcanoes
+fgv = folium.FeatureGroup(name='Volcanoes')
+
+#pointing the Latituted and Longitude through Loops using CSV data
+for lat, lon, elev in zip(lt, ln, el):
+    fgv.add_child(folium.CircleMarker(location=[lat,lon], radius=10,
+    popup=str(elev)+' m', fill_color=color_elevations, fill_opacity=0.7))
+
+#creating a feature group of population
+fgj = folium.FeatureGroup(name='Population')
+
+#add JSON files through a folium and styling the Population Layer
+fgj.add_child(folium.GeoJson(data=open('world.json','r',
+encoding='utf-8-sig').read(), style_function=lambda x: {'fillColor':'green' if
+x['properties']['POP2005'] < 10000000 
+else 'orange' if 10000000 <= x['properties']['POP2005'] < 20000000 else 'red'}))
+
+#styling the Population Layer
+
+
+#adding a layer control
+map.add_child(fgv)
+map.add_child(fgj)
+map.add_child(folium.LayerControl())
+
+#save the map as the HTML
+map.save('Map1.html')
+
